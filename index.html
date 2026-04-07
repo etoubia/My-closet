@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>My Closet</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="My Closet">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#8B6BAE">
+<meta name="description" content="Your personal closet inventory and outfit builder">
+<link id="pwa-manifest" rel="manifest">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FBF8FC;
+  --surface:#FFFFFF;
+  --surface2:#F3EEF8;
+  --surface3:#EDF5F0;
+  --ink:#2D2435;
+  --ink2:#7A6E85;
+  --ink3:#B8ADCA;
+  --accent:#8B6BAE;
+  --accent-light:#EDE5F7;
+  --accent-mid:#C4A9E0;
+  --pink:#C47FA8;
+  --pink-light:#FAE8F2;
+  --blue:#7AAFC4;
+  --blue-light:#E4F2F8;
+  --green:#7AAF8E;
+  --green-light:#E4F3EB;
+  --red:#C47F7F;
+  --red-light:#FAE8E8;
+  --amber:#C4A47A;
+  --amber-light:#FAF0E4;
+  --border:rgba(139,107,174,0.15);
+  --r:16px;--rs:10px;--rx:6px;--nav:64px;--hdr:56px
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+#app{height:100dvh;display:flex;flex-direction:column;overflow:hidden;position:relative;background:linear-gradient(160deg,#FBF7FF 0%,#F7FBFF 40%,#F7FBF8 100%)}
+.top-header{height:var(--hdr);background:linear-gradient(135deg,#F5EEF9 0%,#EEF4F9 50%,#EEF6F1 100%);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0}
+.logo{font-family:'DM Serif Display',serif;font-size:20px;flex:1}.logo span{color:var(--accent);font-style:italic}
+.hbadge{background:var(--accent-light);color:var(--accent);font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px}
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--nav)+16px)}
+.bottom-nav{height:var(--nav);background:linear-gradient(135deg,#F9F4FC 0%,#F4F0FA 100%);border-top:1px solid var(--border);display:flex;align-items:stretch;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0);overflow-x:auto;scrollbar-width:none}
+.bottom-nav::-webkit-scrollbar{display:none}
+.nav-btn{min-width:52px;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;cursor:pointer;color:var(--ink3);font-size:9px;font-family:'DM Sans',sans-serif;font-weight:500;padding:5px 2px 3px;transition:color .15s;white-space:nowrap}
+.nav-btn.active{color:var(--accent)}.nav-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.ndot{width:4px;height:4px;border-radius:50%;background:var(--accent);margin-top:1px;opacity:0;transition:opacity .15s}.nav-btn.active .ndot{opacity:1}
+.section{display:none;padding:13px}.section.active{display:block}
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--border);padding:13px;margin-bottom:10px}
+.stitle{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:11px}
+.chip-row{display:flex;gap:5px;overflow-x:auto;padding-bottom:3px;margin-bottom:11px;scrollbar-width:none}
+.chip-row::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;padding:5px 11px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--ink2);font-size:12px;font-weight:500;cursor:pointer;flex-shrink:0;font-family:'DM Sans',sans-serif;transition:all .12s}
+.chip.active{background:var(--accent);color:white;border-color:var(--accent)}
+.item-list{display:flex;flex-direction:column;gap:7px}
+.item-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:10px;display:flex;align-items:center;gap:9px;cursor:pointer;transition:border-color .12s}
+.item-row:active{border-color:var(--accent);background:var(--accent-light)}
+.ithumb{border-radius:9px;flex-shrink:0;border:1px solid var(--border);object-fit:cover}
+.iinfo{flex:1;min-width:0}
+.iname{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.isub{font-size:11px;color:var(--ink3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ibadges{display:flex;gap:3px;flex-wrap:wrap;margin-top:5px}
+.badge{font-size:10px;font-weight:500;padding:2px 6px;border-radius:5px}
+.bf{background:var(--green-light);color:var(--green)}.bt{background:var(--red-light);color:var(--red)}
+.bb{background:var(--amber-light);color:var(--amber)}.bg{background:var(--accent-light);color:var(--accent)}
+.bs{background:var(--surface2);color:var(--ink2)}.bl{background:var(--amber-light);color:var(--amber)}.ba{background:var(--surface3);color:var(--green)}
+.flabel{font-size:11px;font-weight:500;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block}
+.finput,.fselect{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface);color:var(--ink);font-size:15px;font-family:'DM Sans',sans-serif;-webkit-appearance:none;outline:none;transition:border-color .12s}
+.finput:focus,.fselect:focus{border-color:var(--accent)}
+.ff{margin-bottom:11px}
+.season-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.stog{padding:9px;border:1px solid var(--border);border-radius:var(--rs);text-align:center;cursor:pointer;font-size:12px;font-weight:500;color:var(--ink2);background:var(--surface);font-family:'DM Sans',sans-serif;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:4px}
+.stog.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.cpgrid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.cdot{width:100%;aspect-ratio:1;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .12s}
+.cdot.active{border-color:var(--accent);transform:scale(1.15)}
+.btn{padding:12px 16px;border-radius:var(--rs);border:none;font-size:15px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn:active{transform:scale(.97)}
+.bpri{background:var(--accent);color:white;width:100%}
+.bsec{background:var(--surface2);color:var(--ink);width:100%}
+.bout{background:transparent;color:var(--accent);border:1px solid var(--accent);width:100%}
+.fsgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.fopt{padding:9px 7px;border:1px solid var(--border);border-radius:var(--rs);text-align:center;cursor:pointer;font-size:12px;font-weight:500;color:var(--ink2);background:var(--surface);font-family:'DM Sans',sans-serif;transition:all .12s}
+.fopt.active.fits{background:var(--green-light);border-color:var(--green);color:var(--green)}
+.fopt.active.tight{background:var(--red-light);border-color:var(--red);color:var(--red)}
+.fopt.active.big{background:var(--amber-light);border-color:var(--amber);color:var(--amber)}
+.fopt.active.goal{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.sopt{padding:6px 9px;border:1px solid var(--border);border-radius:var(--rx);background:var(--surface);color:var(--ink2);font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .12s;min-width:36px;text-align:center}
+.sopt.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.bopt{padding:10px 12px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);color:var(--ink);font-family:'DM Sans',sans-serif}
+.bopt:last-child{border-bottom:none}.bopt:active{background:var(--accent-light)}
+.bcreate{color:var(--accent);font-weight:500}.bcnt{font-size:11px;color:var(--ink3)}
+.sbar{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:8px 11px;margin-bottom:9px}
+.sbar input{flex:1;border:none;background:none;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);outline:none}
+.sbar input::placeholder{color:var(--ink3)}
+.mphotos{display:flex;gap:7px;overflow-x:auto;padding-bottom:3px;margin-bottom:11px;scrollbar-width:none}
+.mphotos::-webkit-scrollbar{display:none}
+.pthumb{width:68px;height:68px;object-fit:cover;border-radius:var(--rs);border:1px solid var(--border)}
+.pthumbwrap{position:relative;flex-shrink:0}
+.pthumbdel{position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;background:var(--red);color:white;border:none;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.paddbtn{width:68px;height:68px;border-radius:var(--rs);border:1.5px dashed var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--ink3);font-size:24px}
+.oslabel{font-size:11px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.oslot{min-height:58px;border:1.5px dashed var(--accent-mid);border-radius:var(--rs);padding:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:9px;background:var(--accent-light)}
+.ochip{background:var(--surface);border:1px solid var(--border);border-radius:var(--rx);padding:5px 7px;font-size:12px;display:flex;align-items:center;gap:4px}
+.ochipx{background:none;border:none;color:var(--ink3);font-size:15px;cursor:pointer;line-height:1;padding:0;font-family:'DM Sans',sans-serif}
+.oetxt{font-size:12px;color:var(--ink3);padding:3px}
+.wstrip{background:linear-gradient(135deg,#A47EC4 0%,#8B6BAE 100%);color:white;border-radius:var(--r);padding:13px;display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.wtemp{font-size:32px;font-weight:300;line-height:1}
+.winfo{flex:1}.wcity{font-size:11px;opacity:.8;margin-bottom:1px}.wdesc{font-size:13px;font-weight:500}
+.wsbadge{background:rgba(255,255,255,.25);border-radius:20px;padding:3px 9px;font-size:11px;margin-top:4px;display:inline-block}
+.wicon{font-size:36px;line-height:1}
+.sgcard{background:var(--accent-light);border:1px solid var(--accent-mid);border-color:rgba(139,107,174,.25);border-radius:var(--r);padding:13px;margin-bottom:9px}
+.sgtitle{font-family:'DM Serif Display',serif;font-size:16px;color:var(--accent);margin-bottom:9px}
+.stile{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:12px;text-align:center}
+.snum{font-family:'DM Serif Display',serif;font-size:28px;line-height:1}
+.slbl{font-size:11px;color:var(--ink3);margin-top:2px}
+.brow{display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.bkey{font-size:12px;color:var(--ink2);width:70px;text-align:right;flex-shrink:0}
+.btrack{flex:1;background:var(--surface2);border-radius:4px;height:14px;overflow:hidden}
+.bfill{height:100%;border-radius:4px;transition:width .4s}
+.bval{font-size:12px;font-weight:500;width:18px}
+.empty{text-align:center;padding:34px 14px;color:var(--ink3)}
+.emicon{font-size:36px;margin-bottom:9px;line-height:1}
+.emtitle{font-family:'DM Serif Display',serif;font-size:18px;color:var(--ink2);margin-bottom:4px}
+.emsub{font-size:13px}
+.pmodal{position:absolute;bottom:var(--nav);left:0;right:0;background:var(--surface);border-top:1px solid var(--border);border-radius:var(--r) var(--r) 0 0;max-height:62dvh;overflow-y:auto;z-index:100;padding:13px;transform:translateY(100%);transition:transform .25s ease}
+.pmodal.open{transform:translateY(0)}
+.phandle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 13px}
+.fab{position:absolute;bottom:calc(var(--nav)+13px);right:13px;width:48px;height:48px;border-radius:50%;background:var(--accent);color:white;border:none;font-size:25px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(139,107,174,.45);z-index:50;font-family:'DM Sans',sans-serif;line-height:1}
+.fab:active{transform:scale(.93)}
+.tbbtns{display:flex;border:1px solid var(--border);border-radius:var(--rs);overflow:hidden;margin-bottom:11px}
+.tbbtn{flex:1;padding:8px 4px;border:none;background:var(--surface2);color:var(--ink2);font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+.tbbtn.active{background:var(--accent);color:white}
+.abtn{display:flex;align-items:center;gap:11px;padding:12px;border:1px solid var(--border);border-radius:var(--rs);background:var(--surface);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);width:100%}
+.abtn:active{background:var(--surface2)}.abtn.danger{color:var(--red);border-color:var(--red-light)}
+.fsmodal{display:none;position:absolute;inset:0;z-index:300;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch}
+.fsmhdr{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 13px;height:51px;position:sticky;top:0;z-index:10}
+.fsmhdr button{background:none;border:none;color:var(--ink2);font-size:14px;cursor:pointer;padding:6px 0;font-family:'DM Sans',sans-serif}
+.fsmhdr .savebtn{color:var(--accent);font-weight:500}
+.fsmtitle{flex:1;text-align:center;font-family:'DM Serif Display',serif;font-size:16px}
+.fsmbody{padding:13px}
+.ohcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:10px;margin-bottom:7px}
+.ohdate{font-size:11px;color:var(--ink3);margin-bottom:4px}.ohname{font-size:13px;font-weight:500;margin-bottom:5px}
+.ohitems{display:flex;gap:5px;flex-wrap:wrap}
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:11px}
+.pcell{border-radius:var(--rs);overflow:hidden;cursor:pointer;border:1px solid var(--border)}
+.pswatch{height:52px;width:100%}.plabel{font-size:10px;font-weight:500;padding:3px 5px;background:var(--surface);color:var(--ink2);text-align:center}
+.pcnt{font-size:10px;color:var(--ink3);text-align:center;padding-bottom:3px;background:var(--surface)}
+.wlrow{background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);padding:10px;display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.wlchk{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;font-size:12px}
+.wlchk.done{background:var(--green);border-color:var(--green);color:white}
+.pkday{margin-bottom:13px}
+.pkdaytitle{font-size:13px;font-weight:500;color:var(--accent);margin-bottom:5px}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="top-header"><div class="logo">my <span>closet</span></div><div class="hbadge" id="hcount">0 items</div></div>
+<div class="scroll-area" id="scroll-area">
+
+<!-- INVENTORY -->
+<div class="section active" id="sec-inventory">
+  <div class="sbar">
+    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="inv-search" placeholder="Search name, brand, notes…" oninput="renderInventory()">
+    <button onclick="document.getElementById('inv-search').value='';renderInventory()" style="background:none;border:none;color:var(--ink3);cursor:pointer;font-size:16px;padding:0">×</button>
+  </div>
+  <div style="display:flex;gap:6px;margin-bottom:9px">
+    <select class="fselect" id="inv-sort" onchange="renderInventory()" style="flex:1;padding:7px 10px;font-size:12px">
+      <option value="added">Recently added</option><option value="name">Name A–Z</option><option value="brand">Brand A–Z</option><option value="category">Category</option><option value="color">Color</option>
+    </select>
+    <select class="fselect" id="inv-status" onchange="renderInventory()" style="flex:1;padding:7px 10px;font-size:12px">
+      <option value="active">Active closet</option><option value="laundry">In laundry</option><option value="archive">Archived</option><option value="all">All items</option>
+    </select>
+  </div>
+  <div class="chip-row" id="inv-chips">
+    <button class="chip active" onclick="setIF('all',this)">All</button>
+    <button class="chip" onclick="setIF('tops',this)">Tops</button>
+    <button class="chip" onclick="setIF('bottoms',this)">Bottoms</button>
+    <button class="chip" onclick="setIF('dresses',this)">Dresses</button>
+    <button class="chip" onclick="setIF('outerwear',this)">Outerwear</button>
+    <button class="chip" onclick="setIF('shoes',this)">Shoes</button>
+    <button class="chip" onclick="setIF('accessories',this)">Accessories</button>
+    <button class="chip" onclick="setIF('swimwear',this)">Swimwear</button>
+    <button class="chip" onclick="setIF('undergarments',this)">Undergarments</button>
+    <button class="chip" onclick="setIF('spring',this)">🌸 Spring</button>
+    <button class="chip" onclick="setIF('summer',this)">☀ Summer</button>
+    <button class="chip" onclick="setIF('fall',this)">🍂 Fall</button>
+    <button class="chip" onclick="setIF('winter',this)">❄ Winter</button>
+    <button class="chip" onclick="setIF('fits',this)">Fits well</button>
+    <button class="chip" onclick="setIF('tight',this)">Too tight</button>
+    <button class="chip" onclick="setIF('goal',this)">Goal</button>
+    <span id="tag-chips"></span>
+  </div>
+  <div class="item-list" id="inv-list"></div>
+  <div class="empty" id="inv-empty" style="display:none"><div class="emicon">👗</div><div class="emtitle">Nothing here</div><div class="emsub">Tap + to add items</div></div>
+</div>
+
+<!-- ADD ITEM -->
+<div class="section" id="sec-add">
+  <div class="stitle">Add item</div>
+  <label class="flabel" style="margin-bottom:5px">Photos</label>
+  <div class="mphotos" id="add-photos-row"><div class="paddbtn" onclick="document.getElementById('add-pfile').click()">+</div></div>
+  <input type="file" id="add-pfile" accept="image/*" style="display:none" onchange="handleAddPhoto(this)">
+  <div class="ff"><label class="flabel">Item name</label><input class="finput" id="f-name" type="text" placeholder="e.g. Navy linen blazer"></div>
+  <div class="ff" style="position:relative"><label class="flabel">Brand</label>
+    <input class="finput" id="f-brand" type="text" autocomplete="off" placeholder="Start typing…" oninput="onBI(this,'brand-dd','pickB','addNB')" onfocus="onBI(this,'brand-dd','pickB','addNB')" onblur="hideBD('brand-dd')">
+    <div id="brand-dd" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden;margin-top:2px;box-shadow:0 4px 14px rgba(0,0,0,.08)"></div>
+  </div>
+  <div class="ff"><label class="flabel">Category</label>
+    <select class="fselect" id="f-cat" onchange="renderSO('size-area','f-sizecustom',CAT_ST[this.value],'selSz')">
+      <option value="tops">Tops</option><option value="bottoms">Bottoms</option><option value="dresses">Dresses</option><option value="outerwear">Outerwear</option><option value="shoes">Shoes</option><option value="accessories">Accessories</option><option value="swimwear">Swimwear</option><option value="undergarments">Undergarments</option>
+    </select>
+  </div>
+  <div class="ff"><label class="flabel">Color</label><div class="cpgrid" id="color-grid"></div></div>
+  <div class="ff"><label class="flabel">Size</label><div style="display:flex;gap:5px;flex-wrap:wrap" id="size-area"></div><input class="finput" id="f-sizecustom" type="text" placeholder="Or type custom size" style="margin-top:6px"></div>
+  <div class="ff"><label class="flabel">Seasons</label>
+    <div class="season-grid" id="add-seasons">
+      <button class="stog" data-season="spring" onclick="this.classList.toggle('active')">🌸 Spring</button>
+      <button class="stog" data-season="summer" onclick="this.classList.toggle('active')">☀ Summer</button>
+      <button class="stog" data-season="fall" onclick="this.classList.toggle('active')">🍂 Fall</button>
+      <button class="stog" data-season="winter" onclick="this.classList.toggle('active')">❄ Winter</button>
+    </div>
+  </div>
+  <div class="ff"><label class="flabel">Fit status</label>
+    <div class="fsgrid" id="add-fit">
+      <button class="fopt fits active" data-fit="fits" onclick="selFit(this,'add-fit')">✓ Fits well</button>
+      <button class="fopt tight" data-fit="tight" onclick="selFit(this,'add-fit')">Too tight</button>
+      <button class="fopt big" data-fit="big" onclick="selFit(this,'add-fit')">Too loose</button>
+      <button class="fopt goal" data-fit="goal" onclick="selFit(this,'add-fit')">Goal item</button>
+    </div>
+  </div>
+  <div class="ff"><label class="flabel">Tags</label>
+    <div id="add-tag-area" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px"></div>
+    <div style="display:flex;gap:5px"><input class="finput" id="f-newtag" type="text" placeholder="New tag…" style="flex:1"><button class="btn bsec" onclick="createTag()" style="width:auto;padding:0 12px;flex-shrink:0">+ Add</button></div>
+  </div>
+  <div class="ff"><label class="flabel">Notes</label><input class="finput" id="f-notes" type="text" placeholder="e.g. hand wash, great for work"></div>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    <button class="btn bpri" onclick="addItem()">Add to closet</button>
+    <button class="btn bsec" onclick="clearAddForm()">Clear</button>
+  </div>
+</div>
+
+<!-- OUTFITS -->
+<div class="section" id="sec-outfit">
+  <div class="stitle">Outfits</div>
+  <div class="tbbtns">
+    <button class="tbbtn active" id="ot-builder" onclick="switchOT('builder')">Builder</button>
+    <button class="tbbtn" id="ot-saved" onclick="switchOT('saved')">Saved</button>
+    <button class="tbbtn" id="ot-history" onclick="switchOT('history')">History</button>
+  </div>
+  <div id="op-builder">
+    <div class="oslabel">Top</div><div class="oslot" id="oslot-tops" onclick="openPicker('tops')"><span class="oetxt">Tap to pick</span></div>
+    <div class="oslabel">Bottom</div><div class="oslot" id="oslot-bottoms" onclick="openPicker('bottoms')"><span class="oetxt">Tap to pick</span></div>
+    <div class="oslabel">Outerwear</div><div class="oslot" id="oslot-outerwear" onclick="openPicker('outerwear')"><span class="oetxt">Optional</span></div>
+    <div class="oslabel">Shoes</div><div class="oslot" id="oslot-shoes" onclick="openPicker('shoes')"><span class="oetxt">Tap to pick</span></div>
+    <div class="oslabel">Accessory</div><div class="oslot" id="oslot-accessories" onclick="openPicker('accessories')"><span class="oetxt">Optional</span></div>
+    <div class="ff" style="margin-top:8px"><label class="flabel">Outfit name</label><input class="finput" id="outfit-name" type="text" placeholder="e.g. Sunday brunch look"></div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button class="btn bpri" onclick="saveOutfit()">Save outfit</button>
+      <button class="btn bout" onclick="styletips()">Style tips ↗</button>
+      <button class="btn bsec" onclick="clearOutfit()">Clear</button>
+    </div>
+  </div>
+  <div id="op-saved" style="display:none">
+    <div id="saved-list"></div>
+    <div class="empty" id="saved-empty" style="display:none"><div class="emicon">💾</div><div class="emtitle">No saved outfits</div><div class="emsub">Build and save an outfit</div></div>
+  </div>
+  <div id="op-history" style="display:none">
+    <div id="history-list"></div>
+    <div class="empty" id="hist-empty" style="display:none"><div class="emicon">📅</div><div class="emtitle">No history</div><div class="emsub">Saved outfits appear here</div></div>
+  </div>
+</div>
+
+<!-- SUGGEST -->
+<div class="section" id="sec-suggest">
+  <div id="wx-strip"></div>
+  <div class="card">
+    <div class="ff" style="margin-bottom:8px"><label class="flabel">Season override</label>
+      <select class="fselect" id="s-season"><option value="auto">Auto (from weather)</option><option value="spring">Spring</option><option value="summer">Summer</option><option value="fall">Fall</option><option value="winter">Winter</option></select>
+    </div>
+    <div class="ff" style="margin-bottom:8px"><label class="flabel">Occasion</label>
+      <select class="fselect" id="s-occ"><option>Casual</option><option>Work</option><option>Going out</option><option>Errands</option><option>Date night</option><option>Church/worship</option><option>Activewear</option></select>
+    </div>
+    <button class="btn bpri" onclick="suggestOutfit()">Suggest an outfit</button>
+  </div>
+  <div id="suggest-result"></div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;margin-bottom:9px">Gap analysis</div>
+    <div id="gap-result"></div>
+    <button class="btn bout" style="margin-top:8px" onclick="gapAdvice()">Get AI shopping advice ↗</button>
+  </div>
+</div>
+
+<!-- MORE -->
+<div class="section" id="sec-more">
+  <div class="stitle">More</div>
+  <div class="tbbtns">
+    <button class="tbbtn active" id="mt-palette" onclick="switchMT('palette')">Palette</button>
+    <button class="tbbtn" id="mt-packing" onclick="switchMT('packing')">Packing</button>
+    <button class="tbbtn" id="mt-wishlist" onclick="switchMT('wishlist')">Wishlist</button>
+    <button class="tbbtn" id="mt-archive" onclick="switchMT('archive')">Archive</button>
+  </div>
+  <div id="mp-palette">
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:9px">Tap a color to filter your closet</div>
+    <div class="pgrid" id="palette-grid"></div>
+  </div>
+  <div id="mp-packing" style="display:none">
+    <div class="card">
+      <div class="ff" style="margin-bottom:8px"><label class="flabel">Destination / occasion</label><input class="finput" id="pk-dest" type="text" placeholder="e.g. Beach vacation, Business trip"></div>
+      <div class="ff" style="margin-bottom:8px"><label class="flabel">Days</label><input class="finput" id="pk-days" type="number" min="1" max="30" value="5"></div>
+      <div class="ff" style="margin-bottom:8px"><label class="flabel">Season</label>
+        <select class="fselect" id="pk-season"><option value="spring">Spring</option><option value="summer">Summer</option><option value="fall">Fall</option><option value="winter">Winter</option></select>
+      </div>
+      <button class="btn bpri" onclick="buildPacking()">Build packing list ↗</button>
+    </div>
+    <div id="packing-result"></div>
+  </div>
+  <div id="mp-wishlist" style="display:none">
+    <div class="card">
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <input class="finput" id="w-item" type="text" placeholder="Item to buy…" style="flex:1">
+        <input class="finput" id="w-price" type="text" placeholder="$" style="width:58px;flex-shrink:0">
+      </div>
+      <div style="display:flex;gap:6px">
+        <select class="fselect" id="w-pri" style="flex:1;font-size:12px;padding:7px 9px"><option value="high">High priority</option><option value="med" selected>Medium</option><option value="low">Low</option></select>
+        <button class="btn bpri" onclick="addWish()" style="flex-shrink:0;width:auto;padding:0 15px">Add</button>
+      </div>
+    </div>
+    <div id="wish-list"></div>
+    <div class="empty" id="wish-empty" style="display:none"><div class="emicon">🛍</div><div class="emtitle">Wishlist empty</div><div class="emsub">Add items you want to buy</div></div>
+  </div>
+  <div id="mp-archive" style="display:none">
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:9px">Items archived for donation or storage. Tap Restore to return them to your closet.</div>
+    <div class="item-list" id="archive-list"></div>
+    <div class="empty" id="arch-empty" style="display:none"><div class="emicon">📦</div><div class="emtitle">Archive is empty</div></div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="section" id="sec-overview">
+  <div class="stitle">Overview</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px" id="stat-grid"></div>
+  <div class="card"><div style="font-size:13px;font-weight:500;margin-bottom:9px">By category</div><div id="cat-bars"></div></div>
+  <div class="card"><div style="font-size:13px;font-weight:500;margin-bottom:9px">Fit status</div><div id="fit-bars"></div></div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;margin-bottom:5px">Backup &amp; restore</div>
+    <div style="font-size:12px;color:var(--ink3);margin-bottom:11px">Export your wardrobe to a file to back it up or move it to another device.</div>
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <button class="btn bpri" onclick="exportData()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export wardrobe backup
+      </button>
+      <button class="btn bsec" onclick="document.getElementById('import-file').click()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Import from backup file
+      </button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(this)">
+      <div id="backup-status" style="font-size:12px;color:var(--green);text-align:center;min-height:16px"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="font-size:13px;font-weight:500;margin-bottom:5px">Install as app</div>
+    <div style="font-size:12px;color:var(--ink3);line-height:1.6">
+      <strong style="color:var(--ink2)">iPhone / iPad:</strong> Tap the Share button in Safari → "Add to Home Screen"<br>
+      <strong style="color:var(--ink2)">Android:</strong> Tap the menu (⋮) in Chrome → "Add to Home Screen" or "Install app"
+    </div>
+  </div>
+</div>
+
+</div><!-- /scroll-area -->
+
+<button class="fab" id="fab" onclick="switchTo('add')">+</button>
+
+<!-- Picker -->
+<div class="pmodal" id="picker-modal">
+  <div class="phandle"></div>
+  <div style="font-size:13px;font-weight:500;margin-bottom:9px" id="picker-title">Pick an item</div>
+  <div class="chip-row" id="picker-chips"></div>
+  <div id="picker-list" class="item-list"></div>
+</div>
+<div id="picker-bd" style="display:none;position:absolute;inset:0;z-index:99" onclick="closePicker()"></div>
+
+<!-- Action sheet -->
+<div class="pmodal" id="action-sheet" style="z-index:150;padding-bottom:env(safe-area-inset-bottom,0)">
+  <div class="phandle"></div>
+  <div id="as-name" style="font-size:14px;font-weight:500;margin-bottom:2px"></div>
+  <div id="as-sub" style="font-size:11px;color:var(--ink3);margin-bottom:13px"></div>
+  <div style="display:flex;flex-direction:column;gap:5px">
+    <button class="abtn" onclick="doEdit()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4z"/></svg>Edit item</button>
+    <button class="abtn" onclick="doDupe()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Duplicate</button>
+    <button class="abtn" onclick="doLaundry()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7 12h5l3-4"/></svg><span id="as-laundry-lbl">Mark as in laundry</span></button>
+    <button class="abtn" onclick="doArchive()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg><span id="as-archive-lbl">Archive / donate</span></button>
+    <button class="abtn danger" onclick="doDelete()"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Delete permanently</button>
+    <button class="btn bsec" onclick="closeAS()" style="margin-top:3px">Cancel</button>
+  </div>
+</div>
+<div id="as-bd" style="display:none;position:absolute;inset:0;z-index:149" onclick="closeAS()"></div>
+
+<!-- Edit modal -->
+<div class="fsmodal" id="edit-modal">
+  <div class="fsmhdr">
+    <button onclick="closeEdit()">Cancel</button>
+    <div class="fsmtitle">Edit item</div>
+    <button class="savebtn" onclick="saveEdit()">Save</button>
+  </div>
+  <div class="fsmbody">
+    <label class="flabel" style="margin-bottom:5px">Photos</label>
+    <div class="mphotos" id="edit-photos-row"><div class="paddbtn" onclick="document.getElementById('edit-pfile').click()">+</div></div>
+    <input type="file" id="edit-pfile" accept="image/*" style="display:none" onchange="handleEditPhoto(this)">
+    <div class="ff"><label class="flabel">Item name</label><input class="finput" id="e-name" type="text"></div>
+    <div class="ff" style="position:relative"><label class="flabel">Brand</label>
+      <input class="finput" id="e-brand" type="text" autocomplete="off" oninput="onBI(this,'edit-brand-dd','pickEB','addENB')" onfocus="onBI(this,'edit-brand-dd','pickEB','addENB')" onblur="hideBD('edit-brand-dd')">
+      <div id="edit-brand-dd" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:var(--rs);overflow:hidden;margin-top:2px;box-shadow:0 4px 14px rgba(0,0,0,.08)"></div>
+    </div>
+    <div class="ff"><label class="flabel">Category</label>
+      <select class="fselect" id="e-cat" onchange="renderSO('edit-size-area','e-sizecustom',CAT_ST[this.value],'selESz')">
+        <option value="tops">Tops</option><option value="bottoms">Bottoms</option><option value="dresses">Dresses</option><option value="outerwear">Outerwear</option><option value="shoes">Shoes</option><option value="accessories">Accessories</option><option value="swimwear">Swimwear</option><option value="undergarments">Undergarments</option>
+      </select>
+    </div>
+    <div class="ff"><label class="flabel">Color</label><div class="cpgrid" id="edit-color-grid"></div></div>
+    <div class="ff"><label class="flabel">Size</label><div style="display:flex;gap:5px;flex-wrap:wrap" id="edit-size-area"></div><input class="finput" id="e-sizecustom" type="text" placeholder="Or type custom size" style="margin-top:6px"></div>
+    <div class="ff"><label class="flabel">Seasons</label>
+      <div class="season-grid" id="edit-seasons">
+        <button class="stog" data-season="spring" onclick="this.classList.toggle('active')">🌸 Spring</button>
+        <button class="stog" data-season="summer" onclick="this.classList.toggle('active')">☀ Summer</button>
+        <button class="stog" data-season="fall" onclick="this.classList.toggle('active')">🍂 Fall</button>
+        <button class="stog" data-season="winter" onclick="this.classList.toggle('active')">❄ Winter</button>
+      </div>
+    </div>
+    <div class="ff"><label class="flabel">Fit status</label>
+      <div class="fsgrid" id="edit-fit">
+        <button class="fopt fits" data-fit="fits" onclick="selFit(this,'edit-fit')">✓ Fits well</button>
+        <button class="fopt tight" data-fit="tight" onclick="selFit(this,'edit-fit')">Too tight</button>
+        <button class="fopt big" data-fit="big" onclick="selFit(this,'edit-fit')">Too loose</button>
+        <button class="fopt goal" data-fit="goal" onclick="selFit(this,'edit-fit')">Goal item</button>
+      </div>
+    </div>
+    <div class="ff"><label class="flabel">Tags</label><div id="edit-tag-area" style="display:flex;flex-wrap:wrap;gap:5px"></div></div>
+    <div class="ff"><label class="flabel">Notes</label><input class="finput" id="e-notes" type="text"></div>
+    <div style="display:flex;flex-direction:column;gap:6px;padding-bottom:26px">
+      <button class="btn bpri" onclick="saveEdit()">Save changes</button>
+      <button class="btn bsec" onclick="closeEdit()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom nav -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-inventory" onclick="switchTo('inventory')"><div class="nav-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>Closet<div class="ndot"></div></button>
+  <button class="nav-btn" id="nav-add" onclick="switchTo('add')"><div class="nav-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></div>Add<div class="ndot"></div></button>
+  <button class="nav-btn" id="nav-outfit" onclick="switchTo('outfit')"><div class="nav-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 2l3 6h5l-4 3 2 6-6-4-6 4 2-6-4-3h5z"/></svg></div>Outfits<div class="ndot"></div></button>
+  <button class="nav-btn" id="nav-suggest" onclick="switchTo('suggest')"><div class="nav-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M12 2a6 6 0 0 1 6 6c0 3-2 5-3 6v2H9v-2c-1-1-3-3-3-6a6 6 0 0 1 6-6z"/><path d="M9 20h6M12 20v2"/></svg></div>Suggest<div class="ndot"></div></button>
+  <button class="nav-btn" id="nav-more" onclick="switchTo('more')"><div class="nav-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></div>More<div class="ndot"></div></button>
+  <button class="nav-btn" id="nav-overview" onclick="switchTo('overview')"><div class="nav-icon"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 17l4-8 4 5 3-3 4 6"/><path d="M3 21h18"/></svg></div>Stats<div class="ndot"></div></button>
+</div>
+</div>
+
+<script>
+const SK='cv3-wardrobe',OK='cv3-outfits',TK='cv3-tags',BK='cv3-brands',HK='cv3-history',WK='cv3-wishlist';
+let W=[],savedOutfits=[],outfitHistory=[],wishlist=[];
+let allTags=['activewear','sleepwear','formal','loungewear','workwear','vacation'];
+let allBrands=["Zara","H&M","Nike","Adidas","Levi's","Gap","Old Navy","Target","Amazon Essentials","ASOS","Forever 21","Shein","Anthropologie","Free People","Madewell","J.Crew","Banana Republic","Ann Taylor","Express","Victoria's Secret","Athleta","Lululemon","Uniqlo","Nordstrom","Macy's"];
+let curOutfit={tops:[],bottoms:[],outerwear:[],shoes:[],accessories:[]};
+let addPhotos=[],editPhotos=[],addSelColor='#1a1a2e',editSelColor='#1a1a2e';
+let addSelFit='fits',editSelFit='fits',addSelSize='',editSelSize='';
+let addSelTags=[],editSelTags=[];
+let invFilter='all',pickerSlot=null,pickerFilter='all',wxData=null,activeId=null;
+let curOT='builder',curMT='palette';
+
+const COLORS=[{hex:'#1a1a2e',name:'Black'},{hex:'#F5F5F0',name:'White'},{hex:'#C8B8A2',name:'Beige'},{hex:'#8B7355',name:'Tan'},{hex:'#8B4513',name:'Brown'},{hex:'#708090',name:'Gray'},{hex:'#1B3A5C',name:'Navy'},{hex:'#1560BD',name:'Blue'},{hex:'#228B22',name:'Green'},{hex:'#8B0000',name:'Red'},{hex:'#FF69B4',name:'Pink'},{hex:'#9B59B6',name:'Purple'},{hex:'#FF8C00',name:'Orange'},{hex:'#FFD700',name:'Yellow'},{hex:'#00CED1',name:'Teal'},{hex:'pattern',name:'Pattern'}];
+const CMAP=Object.fromEntries(COLORS.map(c=>[c.hex,c.name]));
+const FL={fits:'Fits well',tight:'Too tight',big:'Too loose',goal:'Goal item'};
+const SS={clothing:{label:'Letter sizes',sizes:['XXS','XS','S','M','L','XL','XXL','1X','2X','3X']},clothing_num:{label:'Numeric sizes',sizes:['00','0','2','4','6','8','10','12','14','16','18','20']},shoes:{label:"Women's shoe",sizes:['5','5.5','6','6.5','7','7.5','8','8.5','9','9.5','10','10.5','11','11.5','12']},none:{label:'',sizes:[]}};
+const CAT_ST={tops:['clothing','clothing_num'],bottoms:['clothing','clothing_num'],dresses:['clothing','clothing_num'],outerwear:['clothing','clothing_num'],swimwear:['clothing','clothing_num'],undergarments:['clothing','clothing_num'],shoes:['shoes'],accessories:['none']};
+
+async function init(){
+  try{const r=await window.storage.get(SK);if(r?.value)W=JSON.parse(r.value);}catch(e){}
+  try{const r=await window.storage.get(OK);if(r?.value){const d=JSON.parse(r.value);savedOutfits=d.saved||[];curOutfit=d.current||{tops:[],bottoms:[],outerwear:[],shoes:[],accessories:[]};}}catch(e){}
+  try{const r=await window.storage.get(TK);if(r?.value)allTags=JSON.parse(r.value);}catch(e){}
+  try{const r=await window.storage.get(BK);if(r?.value)allBrands=JSON.parse(r.value);}catch(e){}
+  try{const r=await window.storage.get(HK);if(r?.value)outfitHistory=JSON.parse(r.value);}catch(e){}
+  try{const r=await window.storage.get(WK);if(r?.value)wishlist=JSON.parse(r.value);}catch(e){}
+  buildCG('color-grid',addSelColor,'addPC');
+  renderSO('size-area','f-sizecustom',CAT_ST['tops'],'selSz');
+  renderAll();fetchWx();
+}
+async function saveW(){try{await window.storage.set(SK,JSON.stringify(W));}catch(e){}}
+async function saveO(){try{await window.storage.set(OK,JSON.stringify({saved:savedOutfits,current:curOutfit}));}catch(e){}}
+async function saveTags(){try{await window.storage.set(TK,JSON.stringify(allTags));}catch(e){}}
+async function saveBrands(){try{await window.storage.set(BK,JSON.stringify(allBrands));}catch(e){}}
+async function saveH(){try{await window.storage.set(HK,JSON.stringify(outfitHistory));}catch(e){}}
+async function saveWL(){try{await window.storage.set(WK,JSON.stringify(wishlist));}catch(e){}}
+
+function switchTo(n){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+n).classList.add('active');
+  document.getElementById('nav-'+n).classList.add('active');
+  document.getElementById('scroll-area').scrollTop=0;
+  document.getElementById('fab').style.display=n==='inventory'?'flex':'none';
+  if(n==='overview')renderStats();
+  if(n==='outfit'){renderSlots();renderSaved();renderHistory();}
+  if(n==='suggest'){renderWx();renderGap();}
+  if(n==='more')renderMT(curMT);
+}
+function renderAll(){renderInventory();renderSlots();updateHdr();renderTagChips();renderAddTags();}
+function updateHdr(){const a=W.filter(i=>!i.archived).length;document.getElementById('hcount').textContent=a+' item'+(a!==1?'s':'');}
+
+// COLOR GRID
+function buildCG(id,cur,fn){document.getElementById(id).innerHTML=COLORS.map(c=>`<div class="cdot ${c.hex===cur?'active':''}" style="background:${c.hex==='pattern'?'repeating-linear-gradient(45deg,#ddd,#ddd 4px,#999 4px,#999 8px)':c.hex}" title="${c.name}" onclick="${fn}('${c.hex}',this)"></div>`).join('');}
+function addPC(h,el){addSelColor=h;document.querySelectorAll('#color-grid .cdot').forEach(d=>d.classList.remove('active'));el.classList.add('active');}
+function editPC(h,el){editSelColor=h;document.querySelectorAll('#edit-color-grid .cdot').forEach(d=>d.classList.remove('active'));el.classList.add('active');}
+
+// SIZE OPTIONS
+function renderSO(areaId,custId,types,fn){
+  const area=document.getElementById(areaId);if(!area)return;
+  if(!types||types[0]==='none'){area.innerHTML='<span style="font-size:12px;color:var(--ink3)">Use text field for size</span>';return;}
+  let h='';
+  types.forEach((t,i)=>{const s=SS[t];if(!s||!s.sizes.length)return;if(i>0)h+='<div style="width:100%;height:1px;background:var(--border);margin:6px 0"></div>';if(types.length>1)h+=`<div style="width:100%;font-size:10px;color:var(--ink3);font-weight:500;text-transform:uppercase;margin-bottom:3px">${s.label}</div>`;h+=s.sizes.map(sz=>`<button class="sopt" data-size="${sz}" onclick="${fn}(this)">${sz}</button>`).join('');});
+  area.innerHTML=h;
+}
+function selSz(el){const a=el.classList.contains('active');document.querySelectorAll('#size-area .sopt').forEach(b=>b.classList.remove('active'));if(!a){el.classList.add('active');addSelSize=el.dataset.size;}else addSelSize='';document.getElementById('f-sizecustom').value='';}
+function selESz(el){const a=el.classList.contains('active');document.querySelectorAll('#edit-size-area .sopt').forEach(b=>b.classList.remove('active'));if(!a){el.classList.add('active');editSelSize=el.dataset.size;}else editSelSize='';document.getElementById('e-sizecustom').value='';}
+function selFit(el,gridId){document.querySelectorAll('#'+gridId+' .fopt').forEach(b=>b.classList.remove('active'));el.classList.add('active');if(gridId==='add-fit')addSelFit=el.dataset.fit;else editSelFit=el.dataset.fit;}
+
+// BRAND AUTOCOMPLETE
+function onBI(el,ddId,pickFn,addFn){
+  const q=el.value.trim().toLowerCase();const dd=document.getElementById(ddId);
+  const matches=q.length===0?allBrands.slice().sort():allBrands.filter(b=>b.toLowerCase().includes(q)).sort((a,b)=>{const ai=a.toLowerCase().indexOf(q),bi=b.toLowerCase().indexOf(q);return ai!==bi?ai-bi:a.localeCompare(b);});
+  const exact=allBrands.some(b=>b.toLowerCase()===q);
+  let h='';
+  matches.slice(0,7).forEach(br=>{const cnt=W.filter(i=>i.brand===br).length;h+=`<div class="bopt" onmousedown="${pickFn}('${br.replace(/'/g,"\\'")}')"><span>${br}</span>${cnt?`<span class="bcnt">${cnt}</span>`:''}</div>`;});
+  if(q&&!exact)h+=`<div class="bopt bcreate" onmousedown="${addFn}('${el.value.trim().replace(/'/g,"\\'")}')">+ Add "${el.value.trim()}"</div>`;
+  dd.innerHTML=h;dd.style.display=h?'block':'none';
+}
+function hideBD(id){setTimeout(()=>{const el=document.getElementById(id);if(el)el.style.display='none';},150);}
+function pickB(n){document.getElementById('f-brand').value=n;document.getElementById('brand-dd').style.display='none';}
+function addNB(n){const t=n.trim();if(!t)return;if(!allBrands.includes(t)){allBrands.push(t);allBrands.sort((a,b)=>a.localeCompare(b));saveBrands();}pickB(t);}
+function pickEB(n){document.getElementById('e-brand').value=n;document.getElementById('edit-brand-dd').style.display='none';}
+function addENB(n){const t=n.trim();if(!t)return;if(!allBrands.includes(t)){allBrands.push(t);allBrands.sort((a,b)=>a.localeCompare(b));saveBrands();}pickEB(t);}
+
+// PHOTOS
+function handleAddPhoto(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{addPhotos.push(e.target.result);renderAddPhotos();};r.readAsDataURL(f);inp.value='';}
+function renderAddPhotos(){document.getElementById('add-photos-row').innerHTML=addPhotos.map((s,i)=>`<div class="pthumbwrap"><img class="pthumb" src="${s}"><button class="pthumbdel" onclick="addPhotos.splice(${i},1);renderAddPhotos()">×</button></div>`).join('')+`<div class="paddbtn" onclick="document.getElementById('add-pfile').click()">+</div>`;}
+function handleEditPhoto(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{editPhotos.push(e.target.result);renderEditPhotos();};r.readAsDataURL(f);inp.value='';}
+function renderEditPhotos(){document.getElementById('edit-photos-row').innerHTML=editPhotos.map((s,i)=>`<div class="pthumbwrap"><img class="pthumb" src="${s}"><button class="pthumbdel" onclick="editPhotos.splice(${i},1);renderEditPhotos()">×</button></div>`).join('')+`<div class="paddbtn" onclick="document.getElementById('edit-pfile').click()">+</div>`;}
+
+// TAGS
+function tagPill(tag,selected,toggleFn){return`<button onclick="${toggleFn}('${tag}')" style="padding:4px 10px;border-radius:20px;border:1px solid ${selected?'var(--accent)':'var(--border)'};background:${selected?'var(--accent-light)':'var(--surface)'};color:${selected?'var(--accent)':'var(--ink2)'};font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif">${selected?'✓ ':''}${tag}</button>`;}
+function renderAddTags(){const a=document.getElementById('add-tag-area');if(a)a.innerHTML=allTags.map(t=>tagPill(t,addSelTags.includes(t),'toggleAT')).join('');}
+function toggleAT(t){addSelTags.includes(t)?addSelTags=addSelTags.filter(x=>x!==t):addSelTags.push(t);renderAddTags();}
+function renderEditTags(){const a=document.getElementById('edit-tag-area');if(a)a.innerHTML=allTags.map(t=>tagPill(t,editSelTags.includes(t),'toggleET')).join('');}
+function toggleET(t){editSelTags.includes(t)?editSelTags=editSelTags.filter(x=>x!==t):editSelTags.push(t);renderEditTags();}
+function createTag(){const inp=document.getElementById('f-newtag');const v=inp.value.trim().toLowerCase();if(!v)return;if(allTags.includes(v)){alert('Tag exists.');return;}allTags.push(v);addSelTags.push(v);saveTags();inp.value='';renderAddTags();renderTagChips();}
+function renderTagChips(){const c=document.getElementById('tag-chips');if(!c)return;c.innerHTML=allTags.map(t=>`<button class="chip ${invFilter===('tag:'+t)?'active':''}" onclick="setIF('tag:${t}',this)">#${t}</button>`).join('');}
+
+// ADD ITEM
+function addItem(){
+  const name=document.getElementById('f-name').value.trim();if(!name){alert('Please enter a name.');return;}
+  const seasons=[...document.querySelectorAll('#add-seasons .stog.active')].map(b=>b.dataset.season);
+  const sz=document.getElementById('f-sizecustom').value.trim()||addSelSize;
+  const br=document.getElementById('f-brand').value.trim();
+  if(br&&!allBrands.includes(br)){allBrands.push(br);allBrands.sort((a,b)=>a.localeCompare(b));saveBrands();}
+  const item={id:Date.now().toString(),name,brand:br,category:document.getElementById('f-cat').value,color:addSelColor,seasons,fit:addSelFit,size:sz,tags:[...addSelTags],notes:document.getElementById('f-notes').value.trim(),photos:[...addPhotos],laundry:false,archived:false,addedAt:Date.now()};
+  W.push(item);saveW();clearAddForm();switchTo('inventory');renderAll();
+}
+function clearAddForm(){
+  ['f-name','f-brand','f-notes','f-sizecustom'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('brand-dd').style.display='none';
+  document.querySelectorAll('#add-seasons .stog').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#add-fit .fopt').forEach(b=>b.classList.remove('active'));
+  document.querySelector('#add-fit .fopt.fits').classList.add('active');
+  addSelFit='fits';addSelTags=[];addSelSize='';addPhotos=[];renderAddPhotos();
+  document.getElementById('f-cat').value='tops';
+  renderSO('size-area','f-sizecustom',CAT_ST['tops'],'selSz');
+  addSelColor='#1a1a2e';buildCG('color-grid',addSelColor,'addPC');renderAddTags();
+}
+
+// INVENTORY
+function setIF(f,el){invFilter=f;document.querySelectorAll('#inv-chips .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderInventory();renderTagChips();}
+function getFiltered(){
+  const q=(document.getElementById('inv-search')?.value||'').toLowerCase();
+  const sort=document.getElementById('inv-sort')?.value||'added';
+  const sf=document.getElementById('inv-status')?.value||'active';
+  const seasons=['spring','summer','fall','winter'];
+  let items=W.filter(i=>{
+    if(sf==='active')return !i.archived;if(sf==='laundry')return i.laundry&&!i.archived;if(sf==='archive')return i.archived;return true;
+  }).filter(i=>{
+    if(invFilter==='all')return true;if(seasons.includes(invFilter))return i.seasons?.includes(invFilter);
+    if(['fits','tight','big','goal'].includes(invFilter))return i.fit===invFilter;
+    if(invFilter.startsWith('tag:'))return i.tags?.includes(invFilter.slice(4));
+    return i.category===invFilter;
+  }).filter(i=>!q||(i.name+' '+(i.brand||'')+' '+(i.notes||'')+' '+i.category).toLowerCase().includes(q));
+  items.sort((a,b)=>{if(sort==='name')return a.name.localeCompare(b.name);if(sort==='brand')return(a.brand||'').localeCompare(b.brand||'');if(sort==='category')return a.category.localeCompare(b.category);if(sort==='color')return(a.color||'').localeCompare(b.color||'');return(b.addedAt||0)-(a.addedAt||0);});
+  return items;
+}
+function thumb(item,sz=48){const st=`width:${sz}px;height:${sz}px;border-radius:9px;flex-shrink:0;border:1px solid var(--border)`;if(item.photos?.length)return`<img style="${st};object-fit:cover" src="${item.photos[0]}">`;return`<div style="${st};background:${item.color==='pattern'?'repeating-linear-gradient(45deg,#ddd,#ddd 5px,#aaa 5px,#aaa 10px)':item.color}"></div>`;}
+function cbadge(item){return`<span class="badge bs" style="display:inline-flex;align-items:center;gap:3px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${item.color==='pattern'?'repeating-linear-gradient(135deg,#ccc,#ccc 2px,#999 2px,#999 4px)':item.color};border:1px solid rgba(0,0,0,.12);flex-shrink:0"></span>${CMAP[item.color]||'Color'}</span>`;}
+function renderInventory(){
+  const items=getFiltered();const list=document.getElementById('inv-list');const empty=document.getElementById('inv-empty');
+  updateHdr();if(!items.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  list.innerHTML=items.map(i=>`<div class="item-row" onclick="openAS('${i.id}')">${thumb(i)}<div class="iinfo"><div class="iname">${i.name}</div><div class="isub">${i.brand?`<span style="font-weight:500;color:var(--ink2)">${i.brand}</span> · `:''}${i.category}${i.size?' · '+i.size:''}</div><div class="ibadges">${cbadge(i)}${i.seasons?.length?`<span class="badge bs">${i.seasons.join(', ')}</span>`:''}${i.laundry?'<span class="badge bl">🧺 Laundry</span>':''}<span class="badge ${i.fit==='fits'?'bf':i.fit==='tight'?'bt':i.fit==='big'?'bb':'bg'}">${FL[i.fit]||i.fit}</span>${i.tags?.map(t=>`<span class="badge" style="background:#F0EDE8;color:#6B6560">#${t}</span>`).join('')||''}</div></div><div style="flex-shrink:0;color:var(--ink3)"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></div></div>`).join('');
+}
+
+// ACTION SHEET
+function openAS(id){
+  activeId=id;const i=W.find(x=>x.id===id);if(!i)return;
+  document.getElementById('as-name').textContent=i.name;
+  document.getElementById('as-sub').textContent=[i.brand,i.category,i.size?'Size '+i.size:''].filter(Boolean).join(' · ');
+  document.getElementById('as-laundry-lbl').textContent=i.laundry?'Mark as clean':'Mark as in laundry';
+  document.getElementById('as-archive-lbl').textContent=i.archived?'Restore to closet':'Archive / donate';
+  document.getElementById('as-bd').style.display='block';
+  setTimeout(()=>document.getElementById('action-sheet').classList.add('open'),10);
+}
+function closeAS(){document.getElementById('action-sheet').classList.remove('open');document.getElementById('as-bd').style.display='none';}
+function doDelete(){const i=W.find(x=>x.id===activeId);if(!i)return;closeAS();setTimeout(()=>{if(confirm('Permanently delete "'+i.name+'"?')){W=W.filter(x=>x.id!==activeId);saveW();renderInventory();}},300);}
+function doDupe(){const i=W.find(x=>x.id===activeId);if(!i)return;W.push({...i,id:Date.now().toString(),name:i.name+' (copy)',tags:[...(i.tags||[])],photos:[...(i.photos||[])],addedAt:Date.now()});saveW();renderInventory();closeAS();}
+function doLaundry(){const idx=W.findIndex(x=>x.id===activeId);if(idx<0)return;W[idx].laundry=!W[idx].laundry;saveW();renderInventory();closeAS();}
+function doArchive(){const idx=W.findIndex(x=>x.id===activeId);if(idx<0)return;W[idx].archived=!W[idx].archived;if(W[idx].archived)W[idx].laundry=false;saveW();renderInventory();closeAS();}
+function doEdit(){closeAS();setTimeout(()=>openEdit(activeId),300);}
+
+// EDIT MODAL
+function openEdit(id){
+  const i=W.find(x=>x.id===id);if(!i)return;activeId=id;
+  editPhotos=[...(i.photos||[])];editSelColor=i.color||'#1a1a2e';editSelFit=i.fit||'fits';editSelSize=i.size||'';editSelTags=[...(i.tags||[])];
+  document.getElementById('e-name').value=i.name||'';document.getElementById('e-brand').value=i.brand||'';document.getElementById('e-notes').value=i.notes||'';document.getElementById('e-cat').value=i.category||'tops';document.getElementById('e-sizecustom').value='';
+  renderEditPhotos();buildCG('edit-color-grid',editSelColor,'editPC');
+  renderSO('edit-size-area','e-sizecustom',CAT_ST[i.category]||['clothing','clothing_num'],'selESz');
+  setTimeout(()=>{const btn=document.querySelector(`#edit-size-area [data-size="${i.size}"]`);if(btn){btn.classList.add('active');editSelSize=i.size;}else if(i.size)document.getElementById('e-sizecustom').value=i.size;},0);
+  document.querySelectorAll('#edit-seasons .stog').forEach(b=>b.classList.toggle('active',(i.seasons||[]).includes(b.dataset.season)));
+  document.querySelectorAll('#edit-fit .fopt').forEach(b=>b.classList.toggle('active',b.dataset.fit===editSelFit));
+  renderEditTags();document.getElementById('edit-modal').style.display='block';document.getElementById('edit-modal').scrollTop=0;
+}
+function closeEdit(){document.getElementById('edit-modal').style.display='none';}
+function saveEdit(){
+  const name=document.getElementById('e-name').value.trim();if(!name){alert('Name required.');return;}
+  const sz=document.getElementById('e-sizecustom').value.trim()||editSelSize;
+  const br=document.getElementById('e-brand').value.trim();
+  if(br&&!allBrands.includes(br)){allBrands.push(br);allBrands.sort((a,b)=>a.localeCompare(b));saveBrands();}
+  const seasons=[...document.querySelectorAll('#edit-seasons .stog.active')].map(b=>b.dataset.season);
+  const idx=W.findIndex(x=>x.id===activeId);if(idx<0)return;
+  W[idx]={...W[idx],name,brand:br,category:document.getElementById('e-cat').value,color:editSelColor,seasons,fit:editSelFit,size:sz,tags:[...editSelTags],notes:document.getElementById('e-notes').value.trim(),photos:[...editPhotos]};
+  saveW();renderInventory();closeEdit();
+}
+
+// OUTFIT BUILDER
+function switchOT(t){curOT=t;['builder','saved','history'].forEach(x=>{document.getElementById('op-'+x).style.display=t===x?'block':'none';document.getElementById('ot-'+x).classList.toggle('active',t===x);});if(t==='saved')renderSaved();if(t==='history')renderHistory();}
+function openPicker(slot){pickerSlot=slot;pickerFilter='all';document.getElementById('picker-title').textContent='Pick for: '+slot;document.getElementById('picker-bd').style.display='block';renderPickerChips();renderPickerList();setTimeout(()=>document.getElementById('picker-modal').classList.add('open'),10);}
+function closePicker(){document.getElementById('picker-modal').classList.remove('open');document.getElementById('picker-bd').style.display='none';}
+function renderPickerChips(){const cats=['all','tops','bottoms','dresses','outerwear','shoes','accessories','swimwear','undergarments'];document.getElementById('picker-chips').innerHTML=cats.map(c=>`<button class="chip ${c===pickerFilter?'active':''}" onclick="setPF('${c}',this)">${c==='all'?'All':c.charAt(0).toUpperCase()+c.slice(1)}</button>`).join('');}
+function setPF(f,el){pickerFilter=f;document.querySelectorAll('#picker-chips .chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');renderPickerList();}
+function renderPickerList(){
+  const items=(pickerFilter==='all'?W:W.filter(i=>i.category===pickerFilter)).filter(i=>!i.archived&&!i.laundry);
+  if(!items.length){document.getElementById('picker-list').innerHTML='<div style="color:var(--ink3);font-size:13px;padding:6px">No available items</div>';return;}
+  document.getElementById('picker-list').innerHTML=items.map(i=>`<div class="item-row" onclick="addToSlot('${i.id}')">${thumb(i)}<div class="iinfo"><div class="iname">${i.name}</div><div class="isub">${i.brand?`<span style="font-weight:500">${i.brand}</span> · `:''}${i.category}${i.size?' · '+i.size:''}</div><div class="ibadges">${cbadge(i)}<span class="badge ${i.fit==='fits'?'bf':i.fit==='tight'?'bt':i.fit==='big'?'bb':'bg'}">${FL[i.fit]}</span></div></div></div>`).join('');
+}
+function addToSlot(id){if(!pickerSlot)return;if(!curOutfit[pickerSlot])curOutfit[pickerSlot]=[];if(!curOutfit[pickerSlot].includes(id))curOutfit[pickerSlot].push(id);saveO();renderSlots();closePicker();}
+function remFromSlot(id,slot){curOutfit[slot]=curOutfit[slot].filter(x=>x!==id);saveO();renderSlots();}
+function renderSlots(){
+  ['tops','bottoms','outerwear','shoes','accessories'].forEach(slot=>{
+    const el=document.getElementById('oslot-'+slot);if(!el)return;
+    const ids=curOutfit[slot]||[];
+    const chips=ids.map(id=>{const i=W.find(x=>x.id===id);if(!i)return'';return`<div class="ochip">${thumb(i,26)}<span style="font-size:12px">${i.name}</span><button class="ochipx" onclick="event.stopPropagation();remFromSlot('${id}','${slot}')">×</button></div>`;}).join('');
+    el.innerHTML=chips||`<span class="oetxt">Tap to pick</span>`;
+  });
+}
+function clearOutfit(){curOutfit={tops:[],bottoms:[],outerwear:[],shoes:[],accessories:[]};document.getElementById('outfit-name').value='';saveO();renderSlots();}
+function styletips(){const names=Object.values(curOutfit).flat().map(id=>{const i=W.find(x=>x.id===id);return i?i.name:null;}).filter(Boolean);if(!names.length){alert('Add items first.');return;}window.sendPrompt&&sendPrompt('Give me color coordination and styling tips for this outfit: '+names.join(', ')+'. What would complete it?');}
+function saveOutfit(){
+  const ids=Object.values(curOutfit).flat();if(!ids.length){alert('Build an outfit first.');return;}
+  const name=document.getElementById('outfit-name').value.trim()||'Outfit '+new Date().toLocaleDateString();
+  const entry={id:Date.now().toString(),name,slots:Object.fromEntries(Object.entries(curOutfit).map(([k,v])=>[k,[...v]])),date:Date.now()};
+  savedOutfits.unshift(entry);outfitHistory.unshift({...entry,id:entry.id+'h'});
+  saveO();saveH();alert('"'+name+'" saved!');renderSaved();renderHistory();
+}
+function renderSaved(){
+  const list=document.getElementById('saved-list');const empty=document.getElementById('saved-empty');
+  if(!savedOutfits.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  list.innerHTML=savedOutfits.map(o=>`<div class="ohcard"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px"><div class="ohname">${o.name}</div><div style="display:flex;gap:8px"><button style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif" onclick="loadOutfit('${o.id}')">Load</button><button style="background:none;border:none;color:var(--red);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif" onclick="delSaved('${o.id}')">Delete</button></div></div><div class="ohdate">${new Date(o.date).toLocaleDateString()}</div><div class="ohitems">${Object.values(o.slots).flat().map(id=>{const i=W.find(x=>x.id===id);return i?thumb(i,34):'';}).join('')}</div></div>`).join('');
+}
+function loadOutfit(id){const o=savedOutfits.find(x=>x.id===id);if(!o)return;curOutfit={...o.slots};document.getElementById('outfit-name').value=o.name;saveO();switchOT('builder');renderSlots();}
+function delSaved(id){if(!confirm('Delete saved outfit?'))return;savedOutfits=savedOutfits.filter(x=>x.id!==id);saveO();renderSaved();}
+function renderHistory(){
+  const list=document.getElementById('history-list');const empty=document.getElementById('hist-empty');
+  if(!outfitHistory.length){list.innerHTML='';empty.style.display='block';return;}
+  empty.style.display='none';
+  list.innerHTML=outfitHistory.map(o=>`<div class="ohcard"><div class="ohdate">${new Date(o.date).toLocaleDateString()}</div><div class="ohname">${o.name}</div><div class="ohitems">${Object.values(o.slots).flat().map(id=>{const i=W.find(x=>x.id===id);return i?thumb(i,34):'';}).join('')}</div></div>`).join('');
+}
+
+// WEATHER + SUGGEST
+async function fetchWx(){try{const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.3382&longitude=-121.8863&current=temperature_2m,weathercode&temperature_unit=fahrenheit');const d=await r.json();wxData={temp:Math.round(d.current.temperature_2m),code:d.current.weathercode};renderWx();}catch(e){wxData={temp:68,code:0};}}
+function wDesc(c){if(c===0)return'Clear sky';if(c<=3)return'Partly cloudy';if(c<=49)return'Foggy';if(c<=69)return'Rainy';if(c<=79)return'Snowy';if(c<=99)return'Thunderstorms';return'Variable';}
+function wIcon(c){if(c===0)return'☀';if(c<=3)return'⛅';if(c<=49)return'🌫';if(c<=69)return'🌧';if(c<=79)return'❄';if(c<=99)return'⛈';return'🌤';}
+function getSzn(t){if(t>=80)return'summer';if(t>=60)return'spring';if(t>=45)return'fall';return'winter';}
+function renderWx(){const c=document.getElementById('wx-strip');if(!wxData){c.innerHTML='';return;}const{temp,code}=wxData;const s=getSzn(temp);c.innerHTML=`<div class="wstrip"><div class="winfo"><div class="wcity">San Jose, CA</div><div class="wtemp">${temp}°F</div><div class="wdesc">${wDesc(code)}</div><span class="wsbadge">${s.charAt(0).toUpperCase()+s.slice(1)}</span></div><div class="wicon">${wIcon(code)}</div></div>`;}
+function suggestOutfit(){
+  const so=document.getElementById('s-season').value,occ=document.getElementById('s-occ').value;
+  const temp=(wxData||{}).temp||68,code=(wxData||{}).code||0;
+  const s=so==='auto'?getSzn(temp):so;
+  const wear=W.filter(i=>i.fit==='fits'&&!i.archived&&!i.laundry).filter(i=>!i.seasons?.length||i.seasons.includes(s));
+  const pick=arr=>arr.length?arr[Math.floor(Math.random()*arr.length)]:null;
+  const tops=wear.filter(i=>i.category==='tops'),bots=wear.filter(i=>i.category==='bottoms'),drs=wear.filter(i=>i.category==='dresses'),out=wear.filter(i=>i.category==='outerwear'),sh=wear.filter(i=>i.category==='shoes'),acc=wear.filter(i=>i.category==='accessories');
+  const nl=temp<65||code>=51;let slots=[];
+  if(drs.length&&Math.random()>0.5)slots.push({slot:'Dress',item:pick(drs)});
+  else{const t=pick(tops),b=pick(bots);if(t)slots.push({slot:'Top',item:t});if(b)slots.push({slot:'Bottom',item:b});}
+  if(nl&&out.length)slots.push({slot:'Layer',item:pick(out)});
+  if(sh.length)slots.push({slot:'Shoes',item:pick(sh)});
+  const a=pick(acc);if(a)slots.push({slot:'Accessory',item:a});
+  const valid=slots.filter(x=>x.item);const el=document.getElementById('suggest-result');
+  if(!valid.length){el.innerHTML=`<div class="sgcard"><div class="sgtitle">Not enough items</div><div style="font-size:13px;color:var(--accent)">Add more wearable ${s} items.</div></div>`;return;}
+  const rainy=code>=51&&code<=69;const names=valid.map(x=>x.item.name).join(', ');
+  el.innerHTML=`<div class="sgcard"><div class="sgtitle">Today's pick</div><div style="font-size:11px;color:var(--accent);font-weight:500;margin-bottom:9px;text-transform:uppercase;letter-spacing:.5px">${s} · ${occ} · ${temp}°F${rainy?' · Rainy':''}</div>${valid.map(x=>`<div style="display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid rgba(61,44,141,.1)">${thumb(x.item,42)}<div><div style="font-size:11px;color:var(--accent);font-weight:500">${x.slot}</div><div style="font-size:13px;font-weight:500">${x.item.name}</div></div></div>`).join('')}${rainy?`<div style="font-size:12px;color:var(--accent);margin-top:8px">Don't forget an umbrella!</div>`:''}</div><button class="btn bout" style="margin-top:6px" onclick="window.sendPrompt&&sendPrompt('Style tips for: ${names.replace(/'/g,"\\'")} for ${occ} in ${temp}°F ${s}.')">Style tips ↗</button>`;
+}
+function renderGap(){
+  const active=W.filter(i=>!i.archived&&i.fit==='fits');
+  const cats=['tops','bottoms','dresses','outerwear','shoes','accessories'];
+  const gaps=cats.filter(c=>active.filter(i=>i.category===c).length<2);
+  const seasons=['spring','summer','fall','winter'];
+  const sgaps=seasons.filter(s=>active.filter(i=>i.seasons?.includes(s)).length<3);
+  const el=document.getElementById('gap-result');
+  if(!gaps.length&&!sgaps.length){el.innerHTML='<div style="font-size:13px;color:var(--green)">Your closet looks well-rounded!</div>';return;}
+  el.innerHTML=(gaps.length?`<div style="font-size:12px;color:var(--ink2);margin-bottom:5px;font-weight:500">Low stock</div>`+gaps.map(g=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:13px"><span>${g.charAt(0).toUpperCase()+g.slice(1)}</span><span style="color:var(--amber);font-size:11px">${active.filter(i=>i.category===g).length} items</span></div>`).join(''):'')+(sgaps.length?`<div style="font-size:12px;color:var(--ink2);margin:9px 0 5px;font-weight:500">Thin seasons</div>`+sgaps.map(s=>`<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:13px"><span>${s.charAt(0).toUpperCase()+s.slice(1)}</span><span style="color:var(--amber);font-size:11px">${active.filter(i=>i.seasons?.includes(s)).length} items</span></div>`).join(''):'');
+}
+function gapAdvice(){const active=W.filter(i=>!i.archived&&i.fit==='fits');const summary=Object.fromEntries(['tops','bottoms','dresses','outerwear','shoes','accessories'].map(c=>[c,active.filter(i=>i.category===c).length]));window.sendPrompt&&sendPrompt('My wardrobe has: '+JSON.stringify(summary)+' per category. What specific items should I buy to fill gaps? Be specific with styles and colors.');}
+
+// MORE TABS
+function switchMT(t){curMT=t;['palette','packing','wishlist','archive'].forEach(x=>{document.getElementById('mp-'+x).style.display=t===x?'block':'none';document.getElementById('mt-'+x).classList.toggle('active',t===x);});if(t==='palette')renderPalette();if(t==='archive')renderArchive();if(t==='wishlist')renderWishlist();}
+function renderMT(t){switchMT(t);}
+
+// PALETTE
+function renderPalette(){
+  const active=W.filter(i=>!i.archived);const byColor={};
+  COLORS.forEach(c=>{const items=active.filter(i=>i.color===c.hex);if(items.length)byColor[c.hex]={name:c.name,items};});
+  const grid=document.getElementById('palette-grid');
+  if(!Object.keys(byColor).length){grid.innerHTML='<div class="empty"><div class="emicon">🎨</div><div class="emtitle">No items yet</div></div>';return;}
+  grid.innerHTML=Object.entries(byColor).map(([hex,{name,items}])=>`<div class="pcell" onclick="filterByColor('${hex}')"><div class="pswatch" style="background:${hex==='pattern'?'repeating-linear-gradient(45deg,#ddd,#ddd 6px,#aaa 6px,#aaa 12px)':hex}"></div><div class="plabel">${name}</div><div class="pcnt">${items.length}</div></div>`).join('');
+}
+function filterByColor(hex){switchTo('inventory');setIF('all',document.querySelector('#inv-chips .chip'));document.getElementById('inv-search').value=CMAP[hex]||'';renderInventory();}
+
+// PACKING
+function buildPacking(){
+  const dest=document.getElementById('pk-dest').value.trim()||'your trip';
+  const days=Math.max(1,Math.min(30,parseInt(document.getElementById('pk-days').value)||5));
+  const s=document.getElementById('pk-season').value;
+  const wear=W.filter(i=>i.fit==='fits'&&!i.archived&&!i.laundry).filter(i=>!i.seasons?.length||i.seasons.includes(s));
+  const pick=(arr,n)=>{const a=[...arr];const out=[];for(let i=0;i<n&&a.length;i++){const x=Math.floor(Math.random()*a.length);out.push(a.splice(x,1)[0]);}return out;};
+  const tops=pick(wear.filter(i=>i.category==='tops'),Math.ceil(days*.7));
+  const bots=pick(wear.filter(i=>i.category==='bottoms'),Math.ceil(days*.4));
+  const sh=pick(wear.filter(i=>i.category==='shoes'),Math.min(3,days));
+  const out=pick(wear.filter(i=>i.category==='outerwear'),(s==='winter'||s==='fall')?2:1);
+  const acc=pick(wear.filter(i=>i.category==='accessories'),Math.min(3,days));
+  const sec=(title,items)=>items.length?`<div class="pkday"><div class="pkdaytitle">${title} (${items.length})</div>${items.map(i=>`<div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--border)">${thumb(i,34)}<div><div style="font-size:13px;font-weight:500">${i.name}</div>${i.brand?`<div style="font-size:11px;color:var(--ink3)">${i.brand}</div>`:''}</div></div>`).join('')}</div>`:'';
+  document.getElementById('packing-result').innerHTML=`<div class="sgcard"><div class="sgtitle">Packing for ${dest}</div><div style="font-size:11px;color:var(--accent);font-weight:500;margin-bottom:11px;text-transform:uppercase">${days} days · ${s}</div>${sec('Tops',tops)}${sec('Bottoms',bots)}${sec('Outerwear',out)}${sec('Shoes',sh)}${sec('Accessories',acc)}</div><button class="btn bout" style="margin-top:7px" onclick="window.sendPrompt&&sendPrompt('Packing advice for ${dest} for ${days} days in ${s} weather. I have: ${[...tops,...bots,...sh].map(i=>i.name).join(', ')}. What else should I bring? Any outfit combo tips?')">Packing advice ↗</button>`;
+}
+
+// WISHLIST
+function addWish(){
+  const name=document.getElementById('w-item').value.trim();if(!name)return;
+  wishlist.unshift({id:Date.now().toString(),name,price:document.getElementById('w-price').value.trim(),priority:document.getElementById('w-pri').value,done:false});
+  document.getElementById('w-item').value='';document.getElementById('w-price').value='';saveWL();renderWishlist();
+}
+function renderWishlist(){
+  const list=document.getElementById('wish-list');const empty=document.getElementById('wish-empty');
+  if(!wishlist.length){list.innerHTML='';empty.style.display='block';return;}empty.style.display='none';
+  const po=['high','med','low'];const sorted=[...wishlist].sort((a,b)=>po.indexOf(a.priority)-po.indexOf(b.priority));
+  list.innerHTML=sorted.map(w=>`<div class="wlrow" style="${w.done?'opacity:.5':''}"><div class="wlchk ${w.done?'done':''}" onclick="toggleWish('${w.id}')">${w.done?'✓':''}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500;${w.done?'text-decoration:line-through':''}">${w.name}</div><div style="font-size:11px;color:var(--ink3);margin-top:1px">${w.price?w.price+' · ':''}${w.priority} priority</div></div><button onclick="delWish('${w.id}')" style="background:none;border:none;color:var(--ink3);cursor:pointer;font-size:17px;padding:0 0 0 7px">×</button></div>`).join('');
+}
+function toggleWish(id){const i=wishlist.findIndex(w=>w.id===id);if(i>-1){wishlist[i].done=!wishlist[i].done;saveWL();renderWishlist();}}
+function delWish(id){wishlist=wishlist.filter(w=>w.id!==id);saveWL();renderWishlist();}
+
+// ARCHIVE
+function renderArchive(){
+  const archived=W.filter(i=>i.archived);const list=document.getElementById('archive-list');const empty=document.getElementById('arch-empty');
+  if(!archived.length){list.innerHTML='';empty.style.display='block';return;}empty.style.display='none';
+  list.innerHTML=archived.map(i=>`<div class="item-row">${thumb(i)}<div class="iinfo"><div class="iname">${i.name}</div><div class="isub">${i.brand?`<span style="font-weight:500">${i.brand}</span> · `:''}${i.category}</div><div class="ibadges">${cbadge(i)}</div></div><div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0"><button onclick="restoreItem('${i.id}')" style="background:none;border:1px solid var(--accent);border-radius:var(--rx);color:var(--accent);font-size:11px;cursor:pointer;padding:4px 7px;font-family:'DM Sans',sans-serif">Restore</button><button onclick="permDel('${i.id}')" style="background:none;border:1px solid var(--red-light);border-radius:var(--rx);color:var(--red);font-size:11px;cursor:pointer;padding:4px 7px;font-family:'DM Sans',sans-serif">Remove</button></div></div>`).join('');
+}
+function restoreItem(id){const i=W.findIndex(x=>x.id===id);if(i>-1){W[i].archived=false;saveW();renderArchive();renderInventory();}}
+function permDel(id){if(confirm('Permanently remove?')){W=W.filter(i=>i.id!==id);saveW();renderArchive();renderInventory();}}
+
+// STATS
+function renderStats(){
+  const active=W.filter(i=>!i.archived);
+  const fits=active.filter(i=>i.fit==='fits').length,laundry=active.filter(i=>i.laundry).length,goal=active.filter(i=>i.fit==='goal').length,arch=W.filter(i=>i.archived).length;
+  document.getElementById('stat-grid').innerHTML=`<div class="stile"><div class="snum">${active.length}</div><div class="slbl">Active items</div></div><div class="stile"><div class="snum">${fits}</div><div class="slbl">Fits well</div></div><div class="stile"><div class="snum">${laundry}</div><div class="slbl">In laundry</div></div><div class="stile"><div class="snum">${arch}</div><div class="slbl">Archived</div></div>`;
+  const cats=[{k:'tops',l:'Tops'},{k:'bottoms',l:'Bottoms'},{k:'dresses',l:'Dresses'},{k:'outerwear',l:'Outer'},{k:'shoes',l:'Shoes'},{k:'accessories',l:'Acc.'},{k:'swimwear',l:'Swim'},{k:'undergarments',l:'Undergarm.'}];
+  const maxC=Math.max(...cats.map(c=>active.filter(i=>i.category===c.k).length),1);
+  document.getElementById('cat-bars').innerHTML=cats.map(c=>{const n=active.filter(i=>i.category===c.k).length;return`<div class="brow"><div class="bkey">${c.l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(n/maxC*100)}%;background:#A47EC4"></div></div><div class="bval">${n}</div></div>`;}).join('');
+  const fi=[{k:'fits',l:'Fits',col:'#7AAF8E'},{k:'tight',l:'Tight',col:'#C47F7F'},{k:'big',l:'Loose',col:'#C4A47A'},{k:'goal',l:'Goal',col:'#7AAFC4'}];
+  const maxF=Math.max(...fi.map(f=>active.filter(i=>i.fit===f.k).length),1);
+  document.getElementById('fit-bars').innerHTML=fi.map(f=>{const n=active.filter(i=>i.fit===f.k).length;return`<div class="brow"><div class="bkey">${f.l}</div><div class="btrack"><div class="bfill" style="width:${Math.round(n/maxF*100)}%;background:${f.col}"></div></div><div class="bval">${n}</div></div>`;}).join('');
+}
+
+document.getElementById('fab').style.display='flex';
+init();
+
+// ── PWA MANIFEST (injected inline so single-file works) ──────────────────
+(function(){
+  const manifest={
+    name:'My Closet',short_name:'My Closet',
+    description:'Personal closet inventory and outfit builder',
+    start_url:'.',display:'standalone',
+    orientation:'portrait',
+    background_color:'#FBF8FC',theme_color:'#8B6BAE',
+    icons:[
+      {src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%238B6BAE'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle' fill='white'%3E👗%3C/text%3E%3C/svg%3E",sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}
+    ]
+  };
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
+  document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
+})();
+
+// ── SERVICE WORKER (inline, registers offline caching) ───────────────────
+(function(){
+  if(!('serviceWorker' in navigator))return;
+  const swCode=`
+const CACHE='mycloset-v1';
+const ASSETS=[
+  'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap',
+  'https://fonts.gstatic.com'
+];
+self.addEventListener('install',e=>{
+  e.waitUntil(caches.open(CACHE).then(c=>c.addAll([])).then(()=>self.skipWaiting()));
+});
+self.addEventListener('activate',e=>{
+  e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
+});
+self.addEventListener('fetch',e=>{
+  if(e.request.method!=='GET')return;
+  const url=new URL(e.request.url);
+  if(url.hostname==='api.open-meteo.com')return;
+  e.respondWith(
+    caches.match(e.request).then(cached=>{
+      if(cached)return cached;
+      return fetch(e.request).then(res=>{
+        if(res&&res.status===200&&res.type!=='opaque'){
+          const clone=res.clone();
+          caches.open(CACHE).then(c=>c.put(e.request,clone));
+        }
+        return res;
+      }).catch(()=>cached||new Response('Offline',{status:503}));
+    })
+  );
+});
+`;
+  const blob=new Blob([swCode],{type:'application/javascript'});
+  const swUrl=URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl,{scope:'./'})
+    .then(()=>console.log('SW registered'))
+    .catch(e=>console.log('SW registration failed (normal in some browsers):',e));
+})();
+
+// ── EXPORT / IMPORT BACKUP ───────────────────────────────────────────────
+function exportData(){
+  const data={
+    version:3,exportedAt:new Date().toISOString(),
+    wardrobe:W,savedOutfits,outfitHistory,wishlist,allTags,allBrands
+  };
+  const json=JSON.stringify(data,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const date=new Date().toISOString().slice(0,10);
+  a.href=url;a.download='my-closet-backup-'+date+'.json';
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  showBackupStatus('Backup exported successfully!','var(--green)');
+}
+
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  if(!confirm('Importing will REPLACE your current wardrobe data. Are you sure?')){input.value='';return;}
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.wardrobe&&!data.version){showBackupStatus('Invalid backup file.','var(--red)');return;}
+      if(data.wardrobe)W=data.wardrobe;
+      if(data.savedOutfits)savedOutfits=data.savedOutfits;
+      if(data.outfitHistory)outfitHistory=data.outfitHistory;
+      if(data.wishlist)wishlist=data.wishlist;
+      if(data.allTags)allTags=data.allTags;
+      if(data.allBrands)allBrands=data.allBrands;
+      await Promise.all([saveW(),saveO(),saveH(),saveWL(),saveTags(),saveBrands()]);
+      renderAll();
+      showBackupStatus('Imported '+W.length+' items successfully!','var(--green)');
+    }catch(err){showBackupStatus('Could not read backup file.','var(--red)');}
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+function showBackupStatus(msg,color){
+  const el=document.getElementById('backup-status');
+  if(!el)return;
+  el.textContent=msg;el.style.color=color;
+  setTimeout(()=>{el.textContent='';},4000);
+}
+
+</script>
+</body>
+</html>
